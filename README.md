@@ -1,6 +1,10 @@
 #### vue3-Player
 
+<<<<<<< HEAD
 基于mmPlayer,使用vue3与pinia,vite脚手架重构的项目。在线访问地址：http://150.158.212.215/musicPlayer
+=======
+基于mmPlayer,使用vue3与pinia，使vite脚手架重构的项目。在线访问地址：http://150.158.212.215/musicPlayer
+>>>>>>> 5fd9e2254134366ab40c06478cb7f4db16ea8d35
 在这里非常感谢mmPlayer的项目原作者，让我学到了很多。
 
 #### 后台api服务
