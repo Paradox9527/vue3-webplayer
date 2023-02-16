@@ -11,46 +11,50 @@
 		</div>
 
 		<!-- 播放器 -->
-		<div class="music-bar">
+		<div class="music-bar" :class="{disable: !musicReady || !currentMusic.id }">
 			<div class="music-bar-btns">
 				<mmIcon
 					class="pointer"
 					type="prev"
 					:size="36"
 					title="上一曲 Ctrl + Left"
+					@handleclick="prev"
 				/>
 				<div class="control-play pointer" title="播放暂停 Ctrl + Space">
-					<mm-icon type="play" :size="24" />
+					<mm-icon :type="playing ? 'pause': 'play'" :size="24" @handleclick="play"/>
 				</div>
 				<mmIcon
 					class="pointer"
 					type="next"
 					:size="36"
 					title="下一曲 Ctrl + Right"
+					@handleclick="next"
 				/>
 			</div>
 
 			<div class="music-music">
 				<div class="music-bar-info">
-					<template v-if="false">
-						
+					<template v-if="currentMusic && currentMusic.id">
+						{{ currentMusic.name }}
+						<span>- {{ currentMusic.singer }}</span>
 					</template>
 					<template v-else>
 						欢迎使用vue3-player在线音乐播放器
 					</template>
 				</div>
 				<!-- 时间 -->
-				<div class="music-bar-time">
-					23/59/59
+				<div class="music-bar-time" v-if="currentMusic.id">
+					{{ format(currentTime) }}/{{ format(currentMusic.duration % 3600) }} 
 				</div>
 				<!-- 进度条 -->
+
 			</div>
 			<!-- 播放模式 -->
 			<mmIcon
 				class="icon-color pointer mode"
-				type="loop"
+				:type="getModeIconType()"
 				:size="30"
-				title="循环播放"
+				:title="getModeIconTitle()"
 			/>
 
 			<!-- 评论 -->
@@ -75,6 +79,132 @@
 
 <script setup>
 import MusicBtn from '@/components/music-btn/music-btn.vue';
+import { useMusicStore } from '@/store/modules/musicList.js'
+import { silencePromise } from '@/utils/util.js'
+import { computed, getCurrentInstance, ref, watch } from 'vue';
+import { format } from '@/utils/util';
+import { playMode } from '@/config';
+const { proxy } = getCurrentInstance();
+
+let musicReady = ref(false); // 是否可以使用播放器
+let currentTime = ref(0); // 当前播放时间
+const musicStore = useMusicStore()
+// 计算属性
+const audioEle = computed(() => { return musicStore.getaudioEle; })
+const mode = computed(() => { return musicStore.getPlayMode; })
+const playing = computed(() => { return musicStore.getPlayingStatus; })
+const playlist = computed(() => { return musicStore.getPlayList; })
+const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
+const currentIndex = computed(() => { return musicStore.getCurrentIndex; })
+const percentMusic = computed(() => {
+	const duration = currentMusic.value.duration;
+	return currentTime.value && duration ? currentTime / duration : 0
+})
+
+watch(currentIndex, (value) => { // 只有发生变化才会调用
+	// console.log(value);
+	// console.log(musicReady.value);
+	// console.log(currentMusic.value.id);
+})
+
+watch(playing, (value) => {
+	const audio = audioEle;
+	nextTick(() => {
+		value? silencePromise(audio.value.play()) : audio.value.pause()
+		musicReady.value = true;
+	})
+})
+
+watch(currentMusic, (value) => { // 播放
+	audioEle.value.src = value.url;
+	currentTime.value = 0;// 重置参数
+	silencePromise(audioEle.value.play())
+})
+
+watch(currentTime, (value) => {
+	
+})
+
+// 上一曲
+const prev = function() {
+	if (!musicReady.value) {
+		return
+	}
+	if (playlist.value.length === 1) {
+		loop();// 循环播放
+	} else {
+		let index = currentIndex.value - 1;
+		console.log(index);
+		if (index < 0) {
+			index = playlist.value.length - 1;
+		}
+		musicStore.setCurrentIndex(index);
+		if (!playing.value && this.musicReady) {
+          this.setPlaying(true)
+        }
+		musicReady.value = true;
+	}
+}
+// 播放暂停
+const play = function() {
+	if(!musicReady.value) {
+		return
+	}
+	musicStore.setPlaying(!playing.value);
+}
+// 下一首
+// 当 flag 为 true 时，表示上一曲播放失败
+const next = function (flag = false) {
+	if(!musicReady.value) {
+		return
+	}
+	const length = playlist.value.length
+	if((length - 1 === currentIndex.value && mode.value === playMode.order) || (length === 1 && flag)) {
+		musicStore.setCurrentIndex(-1);
+		musicStore.setPlaying(false);
+		return
+	}
+	if (length === 1) {
+		loop();// 循环播放
+	} else {
+		let index = currentIndex.value + 1;
+		if (index === length) {
+			index = 0; // 从头播放
+		}
+		console.log(playing.value);
+		if (!playing.value && musicReady.value) {
+			musicStore.setPlaying(true);
+		}
+		musicStore.setCurrentIndex(index);
+		musicReady.value = true
+	}
+}
+
+// 循环
+const loop = function() {
+	audioEle.value.currentTime = 0;
+	silencePromise(audioEle.value.play())
+	musicStore.setPlaying(true);
+}
+const getModeIconType =  function () {
+	return {
+		[playMode.listLoop]: 'loop',
+        [playMode.order]: 'sequence',
+        [playMode.random]: 'random',
+        [playMode.loop]: 'loop-one'
+	}[mode.value]
+}
+const getModeIconTitle = function () {
+	const key = 'Ctrl + O'
+    return {
+        [playMode.listLoop]: `列表循环 ${key}`,
+        [playMode.order]: `顺序播放 ${key}`,
+        [playMode.random]: `随机播放 ${key}`,
+        [playMode.loop]: `单曲循环 ${key}`
+    }[mode.value]
+}
+// 获取播放模式 icon
+
 </script>
 
 <style lang="scss">

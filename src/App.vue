@@ -3,13 +3,13 @@
 		<router-view></router-view>
 		<!-- <mm-toast></mm-toast> -->
 		<!--播放器-->
-    	<!-- <audio ref="mmPlayer"></audio> -->
+    	<audio ref="mmPlayer"></audio>
 </template>
 
 <script setup>
 import mmHeader from '@/components/mm-header/mm-header.vue';
 import { getPlaylistDetail } from '@/api'
-import { getCurrentInstance } from 'vue';
+import { getCurrentInstance, nextTick } from 'vue';
 import { defaultSheetId } from '@/config.js'
 import { useMusicStore } from '@/store/modules/musicList.js'
 
@@ -35,6 +35,10 @@ if (loadDom) {
 	loadDom.addEventListener('webkitAnimationEnd', animationendFunc);
 	loadDom.classList.add('removeAnimate');
 }
+
+nextTick(() => {
+	musicStore.setAudioEle(proxy.$refs.mmPlayer);
+})
 </script>
 
 <style lang="scss">

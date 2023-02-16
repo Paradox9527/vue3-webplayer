@@ -22,7 +22,7 @@ export default {
 			return { fontSize: props.size + 'px' }
 		}
 		function onClick (e) {
-			content.emit('click', e)
+			content.emit('handleclick', e)
 		}
 		// console.log(content);
 		return {

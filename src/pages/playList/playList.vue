@@ -4,6 +4,7 @@
 		<music-list
 			:list="playlist"
 			:list-type="1"
+			@select="selectItem"
 		>
 			<template v-slot:listBtn >
 				<div class="list-btn">
@@ -17,14 +18,20 @@
 <script setup name="playList">
 import musicList from '@/components/music-list/music-list.vue';
 import { useMusicStore } from '@/store/modules/musicList.js'
-import { computed } from '@vue/runtime-core';
 
 const musicStore = useMusicStore()
 
-const playlist = computed(() => {
-	return musicStore.getPlayList;
-})
+const playing = computed(() => { return musicStore.getPlayingStatus; })
+const playlist = computed(() => { return musicStore.getPlayList; })
+const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
 
+// 播放暂停事件
+const selectItem = function (item, index) {
+	if (item.id !== currentMusic.id) {
+		musicStore.setCurrentIndex(index)
+		musicStore.setPlaying(true)
+	}
+}
 // console.log(playlist);
 
 </script>

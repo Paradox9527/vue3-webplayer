@@ -13,6 +13,7 @@
 			<div ref="listContent" class="list-content">
 				<!-- v-for 循环数据 -->
 				<div class="list-item" 
+					:class="{ on: playing && currentMusic.id === item.id }"
 					v-for="(item, index) in list"
 					:key="item.id"
 					>
@@ -24,9 +25,9 @@
 						<div class="list-menu">
 							<mm-icon
 								class="hover"
-								type="play-mini"
+								:type="getPlayIconType(item)"
 								:size="40"
-								@click.stop="selectItem(item, index)"
+								@handleclick="selectItem(item, index, $event)"
 							/>
 						</div>
 					</div>
@@ -51,16 +52,13 @@
 <script setup name="MusicList">
 import mmNoResult from '@/base/mm-no-result/mm-no-result.vue';
 import { format } from '@/utils/util';
+import { useMusicStore } from '@/store/modules/musicList.js'
 const { proxy } = getCurrentInstance();
+const emit = defineEmits(['select'])
+const musicStore = useMusicStore()
 
-const formatTime = function(time) {
-	return format(time);
-}
-
-const selectItem = function (item, index, e) {
-	console.log(item);
-	proxy.$mmToast("还没实现播放！")
-}
+const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
+const playing = computed(() => { return musicStore.getPlayingStatus; })
 
 const props = defineProps({
 	// 歌曲数据
@@ -77,6 +75,24 @@ const props = defineProps({
 		default: 0
 	}
 })
+
+const formatTime = function(time) {
+	return format(time);
+}
+
+// 播放暂停事件
+const selectItem = function (item, index, e) {
+	// proxy.$mmToast("还没实现播放！")
+	if (currentMusic.value.id && item.id === currentMusic.value.id) {
+		musicStore.setPlaying(!playing.value);
+		return;
+	}
+	emit('select', item, index)
+}
+
+const getPlayIconType = function (itemId) {
+	return playing.value && currentMusic.value.id === itemId.id ?  'pause-mini' : 'play-mini'
+}
 </script>
 
 <style lang="scss" scoped>
@@ -124,7 +140,7 @@ const props = defineProps({
 
     	.list-num {
     		font-size: 0;
-    	//   background: url('~assets/img/wave.gif') no-repeat center center;
+    	  background: url('@/assets/images/wave.gif') no-repeat center center;
 		}
   	}
 
