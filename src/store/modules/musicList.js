@@ -48,12 +48,16 @@ export const useMusicStore = defineStore(
 			},
 			setPlayList(playList) {
 				this.playlist = playList;
+				this.orderList = playList;
 			},
 			setCurrentIndex(index) {
 				this.currentIndex = index;
 			},
 			setAudioEle(ele) {
 				this.audioEle = ele
+			},
+			setPlayMode(playMode) {
+				this.mode = playMode
 			}
 		}
 	}

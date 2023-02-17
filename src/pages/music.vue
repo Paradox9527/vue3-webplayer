@@ -47,7 +47,7 @@
 					{{ format(currentTime) }}/{{ format(currentMusic.duration % 3600) }} 
 				</div>
 				<!-- 进度条 -->
-
+				<mm-progress></mm-progress>
 			</div>
 			<!-- 播放模式 -->
 			<mmIcon
@@ -55,6 +55,7 @@
 				:type="getModeIconType()"
 				:size="30"
 				:title="getModeIconTitle()"
+				@handleclick="modeChange"
 			/>
 
 			<!-- 评论 -->
@@ -79,10 +80,11 @@
 
 <script setup>
 import MusicBtn from '@/components/music-btn/music-btn.vue';
+import MmProgress from '@/base/mm-progress/mm-progress.vue';
 import { useMusicStore } from '@/store/modules/musicList.js'
 import { silencePromise } from '@/utils/util.js'
 import { computed, getCurrentInstance, ref, watch } from 'vue';
-import { format } from '@/utils/util';
+import { format, randomSortArray } from '@/utils/util';
 import { playMode } from '@/config';
 const { proxy } = getCurrentInstance();
 
@@ -96,6 +98,7 @@ const playing = computed(() => { return musicStore.getPlayingStatus; })
 const playlist = computed(() => { return musicStore.getPlayList; })
 const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
 const currentIndex = computed(() => { return musicStore.getCurrentIndex; })
+const orderList = computed(() => { return musicStore.getOrderList })
 const percentMusic = computed(() => {
 	const duration = currentMusic.value.duration;
 	return currentTime.value && duration ? currentTime / duration : 0
@@ -186,6 +189,7 @@ const loop = function() {
 	silencePromise(audioEle.value.play())
 	musicStore.setPlaying(true);
 }
+// 获取播放模式 icon
 const getModeIconType =  function () {
 	return {
 		[playMode.listLoop]: 'loop',
@@ -194,6 +198,7 @@ const getModeIconType =  function () {
         [playMode.loop]: 'loop-one'
 	}[mode.value]
 }
+// 获取播放模式 title
 const getModeIconTitle = function () {
 	const key = 'Ctrl + O'
     return {
@@ -203,7 +208,34 @@ const getModeIconTitle = function () {
         [playMode.loop]: `单曲循环 ${key}`
     }[mode.value]
 }
-// 获取播放模式 icon
+// 修改当前歌曲索引
+const resetCurrentIndex = function(list) {
+	const index = list.findIndex((item) => {
+		return item.id = currentMusic.value.id
+	})
+	musicStore.setCurrentIndex(index);
+}
+// 切换播放模式
+const modeChange = function () {
+	const changeMode = (mode.value + 1) % 4
+	musicStore.setPlayMode(changeMode);
+	if (changeMode === playMode.loop) { // 默认为循环
+		return
+	}
+	let list = [];
+	switch (changeMode) {
+		case playMode.listLoop:
+		case playMode.order:
+			list = orderList.value
+			break
+		case playMode.random:
+			list = randomSortArray(orderList.value)
+			break
+	}
+	resetCurrentIndex(list);
+	musicStore.setPlayList(list);
+}
+
 
 </script>
 
