@@ -51,6 +51,8 @@
 					class="music-progress"
 					:percent="percentMusic"
 					:percent-progress="currentProgress"
+					@percentChange="progressMusic"
+					@percentChangeEnd="progressMusicEnd"
 				>
 				</mm-progress>
 			</div>
@@ -69,10 +71,11 @@
 				type="comment"
 				:size="30"
 				title="循环播放"
+				@handleclick="openComment"
 			/>
 
 			<!-- 音量控制 -->
-			<div class="music-bar-volume">
+			<div class="music-bar-volume" title="音量加减 [Ctrl + Up / Down]">
 
 			</div>
 		</div>
@@ -109,14 +112,11 @@ const percentMusic = computed(() => {
 	const duration = currentMusic.value.duration;
 	return currentTime.value && duration ? currentTime.value / duration : 0
 })
+const historyList = computed(() => { return musicStore.getHistoryList; })
 
 watch(percentMusic, (value) => {
-	console.log(value)
 })
 watch(currentIndex, (value) => { // 只有发生变化才会调用
-	// console.log(value);
-	// console.log(musicReady.value);
-	// console.log(currentMusic.value.id);
 })
 
 watch(playing, (value) => {
@@ -127,14 +127,14 @@ watch(playing, (value) => {
 	})
 })
 
-watch(currentMusic, (value) => { // 播放
+watch(currentMusic, (value) => { // 监听当前音乐的信息
 	audioEle.value.src = value.url;
 	currentTime.value = 0;// 重置参数
 	silencePromise(audioEle.value.play())
 })
 
-watch(currentTime, (value) => {
-	console.log(value)
+watch(currentTime, (newValue) => { // 监听当前播放时间
+
 })
 
 
@@ -155,7 +155,7 @@ const prev = function() {
 		if (!playing.value && this.musicReady) {
           this.setPlaying(true)
         }
-		musicReady.value = true;
+		musicReady.value = false;
 	}
 }
 // 播放暂停
@@ -189,7 +189,7 @@ const next = function (flag = false) {
 			musicStore.setPlaying(true);
 		}
 		musicStore.setCurrentIndex(index);
-		musicReady.value = true
+		musicReady.value = false
 	}
 }
 
@@ -244,15 +244,99 @@ const modeChange = function () {
 	}
 	resetCurrentIndex(list);
 	musicStore.setPlayList(list);
+	proxy.$mmToast("播放模式切换功能好像还有bug")
 }
-
-// 初始化播放器
-const initAudio = function () {
-	const ele = audioEle.value;
-	console.log(ele);
-	ele.onprogress = () => {
-		
+// 打开音乐评论
+const openComment = function () {
+	if (!currentMusic.value.id) {
+		proxy.$mmToast('还没有播放歌曲哦！');
+		return false
 	}
+	proxy.$mmToast('功能还在重构中~');
+}
+// 修改音乐显示时长
+const progressMusic = function (percent) {
+	currentTime.value = currentMusic.value.duration * percent;
+}
+// 修改音乐进度
+const progressMusicEnd = function (percent) {
+	audioEle.value.currentTime = currentMusic.value.duration * percent;
+}
+// 初始化播放器，播放器行为追加
+const initAudio = function () {
+	let retry = 1 // 重试次数
+	const ele = audioEle.value;
+	// 音频缓冲事件
+	ele.onprogress = () => {
+		try {
+			if (ele.buffered.length > 0) {
+				const duration = currentMusic.value.duration;
+				let buffered = 0;
+				ele.buffered.end(0);
+				buffered = ele.buffered.end(0) > duration ? duration : ele.buffered.end(0);
+				currentProgress.value = buffered / duration;
+			}
+		} catch (error) {
+		}
+	}
+	// 开始播放音乐
+	ele.onplay = () => {
+		let timer
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			musicReady.value = true;
+		}, 100)
+	}
+	// 获取当前播放时间
+	ele.ontimeupdate = () => { // 通关监听器，就能改变时间了
+		currentTime.value = ele.currentTime
+	}
+	// 当前音乐播放完毕
+	ele.onended = () => {
+		if (mode.value === playMode.loop) {
+			loop()
+		} else {
+			next()
+		}
+	}
+	// 音乐播放出错
+	ele.onerror = () => {
+		if (retry === 0) {
+			let toastText = '当前音乐不可播放，已自动播放下一曲'
+			if (playlist.value.length === 1) {
+				toastText = '没有可播放的音乐哦~'
+			}
+			proxy.$mmToast(toastText)
+			next(true)
+		} else {
+			console.log("重试一次");
+			retry -= 1;
+			ele.url = currentMusic.value.url;
+			ele.load()
+		}
+	}
+	// 音乐进度拖动大于加载时重载音乐
+	ele.onstalled = () => {
+		ele.load()
+		musicStore.setPlaying(false)
+		let timer
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			musicStore.setPlaying(true)
+		}, 10)
+	}
+	// 将能播放的音乐加入播放历史
+	ele.oncanplay = () => {
+		retry = 1;
+		if (historyList.value.length === 0 || currentMusic.value.id !== historyList.value[0].id) {
+			musicStore.setHistoryList(currentMusic.value);
+		}
+	}
+	// 音频已暂停
+	ele.onpause = () => {
+		musicStore.setPlaying(false)
+	}
+
 }
 
 onMounted(() => {
@@ -261,6 +345,7 @@ onMounted(() => {
 	})
 })
 
+// console.log(playlist.value[0]);
 </script>
 
 <style lang="scss">

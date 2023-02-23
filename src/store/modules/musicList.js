@@ -58,6 +58,9 @@ export const useMusicStore = defineStore(
 			},
 			setPlayMode(playMode) {
 				this.mode = playMode
+			},
+			setHistoryList(historyList) {
+				this.historyList.push(historyList);
 			}
 		}
 	}
