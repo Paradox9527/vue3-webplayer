@@ -26,8 +26,14 @@ const props = defineProps({
 })
 const data = reactive({
 	move: {
-		
+		status: false, // 是否可拖动
+		startX: 0, // 记录最开始点击的X坐标
+		left: 0
 	}
+})
+
+watch(()=> props.percent, (value) => {
+	console.log(value)
 })
 
 </script>

@@ -47,7 +47,12 @@
 					{{ format(currentTime) }}/{{ format(currentMusic.duration % 3600) }} 
 				</div>
 				<!-- 进度条 -->
-				<mm-progress></mm-progress>
+				<mm-progress
+					class="music-progress"
+					:percent="percentMusic"
+					:percent-progress="currentProgress"
+				>
+				</mm-progress>
 			</div>
 			<!-- 播放模式 -->
 			<mmIcon
@@ -90,6 +95,7 @@ const { proxy } = getCurrentInstance();
 
 let musicReady = ref(false); // 是否可以使用播放器
 let currentTime = ref(0); // 当前播放时间
+let currentProgress = ref(0); // 当前缓冲进度
 const musicStore = useMusicStore()
 // 计算属性
 const audioEle = computed(() => { return musicStore.getaudioEle; })
@@ -101,9 +107,12 @@ const currentIndex = computed(() => { return musicStore.getCurrentIndex; })
 const orderList = computed(() => { return musicStore.getOrderList })
 const percentMusic = computed(() => {
 	const duration = currentMusic.value.duration;
-	return currentTime.value && duration ? currentTime / duration : 0
+	return currentTime.value && duration ? currentTime.value / duration : 0
 })
 
+watch(percentMusic, (value) => {
+	console.log(value)
+})
 watch(currentIndex, (value) => { // 只有发生变化才会调用
 	// console.log(value);
 	// console.log(musicReady.value);
@@ -125,8 +134,9 @@ watch(currentMusic, (value) => { // 播放
 })
 
 watch(currentTime, (value) => {
-	
+	console.log(value)
 })
+
 
 // 上一曲
 const prev = function() {
@@ -236,6 +246,20 @@ const modeChange = function () {
 	musicStore.setPlayList(list);
 }
 
+// 初始化播放器
+const initAudio = function () {
+	const ele = audioEle.value;
+	console.log(ele);
+	ele.onprogress = () => {
+		
+	}
+}
+
+onMounted(() => {
+	nextTick(() => {
+		initAudio();
+	})
+})
 
 </script>
 
