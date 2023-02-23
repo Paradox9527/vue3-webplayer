@@ -1,10 +1,10 @@
 #### vue3-Player
-
+----
 基于mmPlayer,使用vue3与pinia，使vite脚手架重构的项目。在线访问地址：http://150.158.212.215/musicPlayer
-在这里非常感谢mmPlayer的项目原作者，让我学到了很多。
+在这里非常感谢mmPlayer的项目原作者，与网易云音乐Node版接口，让我学到了很多。
 
 #### 后台api服务
-
+----
 网易云音乐 NodeJS 版 API：https://binaryify.github.io/NeteaseCloudMusicApi
 
 #### 下载 NeteaseCloudMusicApi
@@ -20,8 +20,10 @@ npm install
 node app.js
 项目运行方式类似，npm run dev/ 打包npm run build
 
-## 感谢原作者
+## 感谢原作者与开源接口
 
 作者：茂茂
 Github：https://github.com/maomao1996/Vue-mmPlayer
 歌曲来源于网易云音乐 (https://music.163.com)`
+
+网易云音乐 NodeJS 版 API：https://binaryify.github.io/NeteaseCloudMusicApi
