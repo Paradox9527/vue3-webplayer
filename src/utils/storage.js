@@ -1,4 +1,4 @@
-// import { defaultVolume } from '@/config'
+import { defaultVolume } from '@/config'
 
 const _storage = window.localStorage
 const storage = {
@@ -114,18 +114,18 @@ export function setVersion(version) {
   return version
 }
 
-// /**
-//  * 音量
-//  * @type VOLUME_KEY：key值
-//  */
-// const VOLUME_KEY = '__mmPlayer_volume__'
-// // 获取音量
-// export function getVolume() {
-//   const volume = storage.get(VOLUME_KEY, defaultVolume)
-//   return Number(volume)
-// }
-// // 修改音量
-// export function setVolume(volume) {
-//   storage.set(VOLUME_KEY, volume)
-//   return volume
-// }
+/**
+ * 音量
+ * @type VOLUME_KEY：key值
+ */
+const VOLUME_KEY = '__mmPlayer_volume__'
+// 获取音量
+export function getVolume() {
+  const volume = storage.get(VOLUME_KEY, defaultVolume)
+  return Number(volume)
+}
+// 修改音量
+export function setVolume(volume) {
+  storage.set(VOLUME_KEY, volume)
+  return volume
+}

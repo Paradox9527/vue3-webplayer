@@ -22,3 +22,6 @@ export const playMode = {
 	random: 2,
 	loop: 3
 }
+
+// 默认音量
+export const defaultVolume = 0.8

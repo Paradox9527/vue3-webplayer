@@ -76,7 +76,7 @@
 
 			<!-- 音量控制 -->
 			<div class="music-bar-volume" title="音量加减 [Ctrl + Up / Down]">
-
+				<volume :volume="playvolume" @volumeChange="volumeChange"></volume>
 			</div>
 		</div>
 
@@ -89,16 +89,20 @@
 <script setup>
 import MusicBtn from '@/components/music-btn/music-btn.vue';
 import MmProgress from '@/base/mm-progress/mm-progress.vue';
+import volume from '@/components/volume/volume.vue'
 import { useMusicStore } from '@/store/modules/musicList.js'
 import { silencePromise } from '@/utils/util.js'
 import { computed, getCurrentInstance, ref, watch } from 'vue';
 import { format, randomSortArray } from '@/utils/util';
 import { playMode } from '@/config';
+import { getVolume, setVolume } from '@/utils/storage.js'
 const { proxy } = getCurrentInstance();
 
 let musicReady = ref(false); // 是否可以使用播放器
 let currentTime = ref(0); // 当前播放时间
 let currentProgress = ref(0); // 当前缓冲进度
+let playvolume = ref(getVolume());
+let isMute = ref();
 const musicStore = useMusicStore()
 // 计算属性
 const audioEle = computed(() => { return musicStore.getaudioEle; })
@@ -127,9 +131,13 @@ watch(playing, (value) => {
 	})
 })
 
-watch(currentMusic, (value) => { // 监听当前音乐的信息
-	audioEle.value.src = value.url;
-	currentTime.value = 0;// 重置参数
+watch(currentMusic, (newMusic, oldMusic) => { // 监听当前音乐的信息
+	if (newMusic.id === oldMusic.id) {
+		return;
+	}
+	audioEle.value.src = newMusic.url;
+	// 重置参数
+	currentTime.value = 0;
 	silencePromise(audioEle.value.play())
 })
 
@@ -261,6 +269,14 @@ const progressMusic = function (percent) {
 // 修改音乐进度
 const progressMusicEnd = function (percent) {
 	audioEle.value.currentTime = currentMusic.value.duration * percent;
+}
+// 修改音量大小
+const volumeChange = function (percent) {
+	percent === 0 ? (isMute.value = true) : (isMute.value = false);
+	playvolume = percent;
+	console.log(percent);
+	audioEle.value.volume = percent;
+	setVolume(percent);
 }
 // 初始化播放器，播放器行为追加
 const initAudio = function () {
