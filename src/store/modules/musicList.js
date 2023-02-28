@@ -43,24 +43,47 @@ export const useMusicStore = defineStore(
 			}
 		},
 		actions: {
-			setPlaying(playStatus) {
+			setPlaying(playStatus) { // 设置播放状态
 				this.playing = playStatus;
 			},
-			setPlayList(playList) {
+			setPlayList(playList) { // 设置播放列表
 				this.playlist = playList;
 				this.orderList = playList;
 			},
-			setCurrentIndex(index) {
+			setOrderList(orderList) {
+				this.orderList = orderList;
+			},
+			setCurrentIndex(index) { //  修改当前音乐索引
 				this.currentIndex = index;
 			},
-			setAudioEle(ele) {
+			setAudioEle(ele) { // 修改audio元素
 				this.audioEle = ele
 			},
-			setPlayMode(playMode) {
+			setPlayMode(playMode) { // 修改播放模式
 				this.mode = playMode
 			},
-			setHistoryList(historyList) {
+			setHistoryList(historyList) { // 修改播放历史列表
 				this.historyList.push(historyList);
+			},
+			removerPlayListItem(list, index) { // 删除正在播放列表中的歌曲
+				let currentIndex = this.currentIndex;
+				console.log(currentIndex);
+				console.log(this);
+				if (index < this.currentIndex || list.length === this.currentIndex) { // 索引比当前所有小，当前播放列表长度等于索引就是最后一个
+					currentIndex--;
+					this.setCurrentIndex(currentIndex);
+				}
+				this.setPlayList(list);
+				if (!list.length) {
+					this.setPlaying(false);
+				} else {
+					this.setPlaying(true);
+				}
+			},
+			clearPlayList() { // 清空播放列表
+				this.setPlaying(false);
+				this.setCurrentIndex(-1);
+				this.setPlayList([]);
 			}
 		}
 	}

@@ -66,11 +66,12 @@ import { useUserStore } from '@/store/modules/user'
 
 const { proxy } = getCurrentInstance();
 const userStore = useUserStore();
-// console.log(userStore);
 let user = reactive({
 	info:{}
 });
 let uidValue = ref('');
+
+// method
 const openDialog = function (key) {
 	switch (key) {
 		case 0:
@@ -89,7 +90,7 @@ const openDialog = function (key) {
 	}
 }
 // 登录
-let login = function () {
+const login = function () {
 	if (uidValue.value === '') {
 		proxy.$mmToast("uid不能为空");
 		openDialog(0);
@@ -99,14 +100,14 @@ let login = function () {
 	_getUserPlaylist(uidValue.value)
 }
 // 退出
-let out = function () {
+const out = function () {
 	user.info = {};
 	userStore.saveUserId(null);
 	// console.log(userStore);
 	proxy.$mmToast('退出成功')
 }
-
-let _getUserPlaylist = function(uid) {
+// 获取用户信息
+const _getUserPlaylist = function(uid) {
 	getUserPlaylist(uid).then(({ playlist = [] }) => {
 		uidValue.value = '';
 		if (playlist.length === 0 || !playlist[0].creator) {
@@ -126,8 +127,8 @@ let _getUserPlaylist = function(uid) {
 	})
 }
 
+// vue3没有created和beforecreate的两个钩子了，setup里了都在
 if (userStore.uid) {
-	console.log("已登录" + userStore.uid);
 	_getUserPlaylist(userStore.uid)
 }
 </script>

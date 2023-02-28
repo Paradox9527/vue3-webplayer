@@ -7,7 +7,10 @@
 				<router-view class="music-list"></router-view>
 			</div>
 			<!-- 右侧 -->
-			<div class="music-right"></div>
+			<div class="music-right" :class="{ show: lyricVisible }">
+				<div class="close-lyric">关闭歌词</div>
+				<lyric :lyric="musicLyric" :nolyric="nolyric" :lyricIndex="lyricIndex"></lyric>
+			</div>
 		</div>
 
 		<!-- 播放器 -->
@@ -81,7 +84,7 @@
 		</div>
 
 		<!-- 遮罩 -->
-		<div class="mmPlayer-bg"></div>
+		<div class="mmPlayer-bg" :style="{ backgroundImage: picUrl }"></div>
 		<div class="mmPlayer-mask"></div>
 	</div>
 </template>
@@ -89,22 +92,29 @@
 <script setup>
 import MusicBtn from '@/components/music-btn/music-btn.vue';
 import MmProgress from '@/base/mm-progress/mm-progress.vue';
-import volume from '@/components/volume/volume.vue'
+import volume from '@/components/volume/volume.vue';
+import lyric from '@/components/lyric/lyric.vue';
+import { getLyric } from '@/api';
 import { useMusicStore } from '@/store/modules/musicList.js'
 import { silencePromise } from '@/utils/util.js'
 import { computed, getCurrentInstance, ref, watch } from 'vue';
-import { format, randomSortArray } from '@/utils/util';
-import { playMode } from '@/config';
+import { format, randomSortArray, parseLyric } from '@/utils/util';
+import { playMode, bgUrl} from '@/config';
 import { getVolume, setVolume } from '@/utils/storage.js'
 const { proxy } = getCurrentInstance();
+const musicStore = useMusicStore()
 
 let musicReady = ref(false); // 是否可以使用播放器
 let currentTime = ref(0); // 当前播放时间
 let currentProgress = ref(0); // 当前缓冲进度
 let playvolume = ref(getVolume());
-let isMute = ref();
-const musicStore = useMusicStore()
-// 计算属性
+let isMute = ref(false); // 是否静音
+let musicLyric = ref([]); // 歌词
+let nolyric = ref(false); // 是否有歌词
+let lyricIndex = ref(0); // 当前播放歌词下标
+let lyricVisible = ref(false); // 移动端歌词显示
+
+// 计算属性computed
 const audioEle = computed(() => { return musicStore.getaudioEle; })
 const mode = computed(() => { return musicStore.getPlayMode; })
 const playing = computed(() => { return musicStore.getPlayingStatus; })
@@ -118,11 +128,11 @@ const percentMusic = computed(() => {
 })
 const historyList = computed(() => { return musicStore.getHistoryList; })
 
-watch(percentMusic, (value) => {
+const picUrl = computed(() => {
+	return `url(${bgUrl})`
 })
-watch(currentIndex, (value) => { // 只有发生变化才会调用
-})
-
+// console.log(picUrl.value);
+// watch 侦听器
 watch(playing, (value) => {
 	const audio = audioEle;
 	nextTick(() => {
@@ -132,24 +142,41 @@ watch(playing, (value) => {
 })
 
 watch(currentMusic, (newMusic, oldMusic) => { // 监听当前音乐的信息
-	if (newMusic.id === oldMusic.id) {
+	if (!newMusic.id) {
+		musicLyric.value = [];
+		return
+	}
+	if (newMusic.id === oldMusic.id) { // 相同音乐就不改
 		return;
 	}
 	audioEle.value.src = newMusic.url;
 	// 重置参数
-	currentTime.value = 0;
-	silencePromise(audioEle.value.play())
+	lyricIndex.value = currentTime.value = currentProgress.value = 0;
+	silencePromise(audioEle.value.play());
+	nextTick(() => {
+		// 获取歌词
+		_getLyric(newMusic.id)
+	})
 })
 
-watch(currentTime, (newValue) => { // 监听当前播放时间
-
+watch(currentTime, (newTime) => { // 监听当前播放时间
+	if (nolyric.value) {
+		return;
+	}
+	let index = 0;
+	for (let i = 0; i < musicLyric.value.length; i++) {
+		if (newTime > musicLyric.value[i].time) {
+			index = i;
+		}
+	}
+	lyricIndex.value = index
 })
 
-
+// methods
 // 上一曲
 const prev = function() {
 	if (!musicReady.value) {
-		return
+		return;
 	}
 	if (playlist.value.length === 1) {
 		loop();// 循环播放
@@ -174,8 +201,7 @@ const play = function() {
 	musicStore.setPlaying(!playing.value);
 }
 // 下一首
-// 当 flag 为 true 时，表示上一曲播放失败
-const next = function (flag = false) {
+const next = function (flag = false) {// 当 flag 为 true 时，表示上一曲播放失败
 	if(!musicReady.value) {
 		return
 	}
@@ -200,7 +226,6 @@ const next = function (flag = false) {
 		musicReady.value = false
 	}
 }
-
 // 循环
 const loop = function() {
 	audioEle.value.currentTime = 0;
@@ -274,7 +299,6 @@ const progressMusicEnd = function (percent) {
 const volumeChange = function (percent) {
 	percent === 0 ? (isMute.value = true) : (isMute.value = false);
 	playvolume = percent;
-	console.log(percent);
 	audioEle.value.volume = percent;
 	setVolume(percent);
 }
@@ -354,14 +378,59 @@ const initAudio = function () {
 	}
 
 }
-
+// 获取歌词
+const _getLyric = function (id) {
+	getLyric(id).then((res) => {
+		if (res.nolyric) {
+			nolyric.value = true;
+		} else {
+			nolyric.value = false;
+			musicLyric.value = parseLyric(res.lrc.lyric);
+		}
+		silencePromise(audioEle.value.play())
+	})
+}
+// 按键事件
+const initKeyDown = function () {
+	document.onkeydown = e => {
+		switch (e.ctrlKey && e.keyCode) {
+			case 32: // 播放暂停Ctrl + Space
+				play();
+				break
+			case 37: // 上一曲Ctrl + Left
+				prev();
+				break
+			case 38: // 音量加Ctrl + Up
+				let plus = Number((volume.value += 0.1).toFixed(1));
+				if (plus > 1) {
+					plus = 1;
+				}
+				volumeChange(plus);
+				break
+			case 39: // 下一曲Ctrl + Right
+				next();
+				break
+			case 40: // 音量减Ctrl + Down
+				let reduce = Number((volume.value -= 0.1).toFixed(1));
+				if (reduce < 0) {
+					reduce = 0;
+				}
+				volumeChange(reduce);
+				break;
+			case 79: // 切换播放模式 Ctrl + O
+				modeChange()
+				break
+		}
+	}
+}
+// 挂载完成后生命钩子
 onMounted(() => {
 	nextTick(() => {
 		initAudio();
+		volumeChange(playvolume.value)
+		initKeyDown();
 	})
 })
-
-// console.log(playlist.value[0]);
 </script>
 
 <style lang="scss">
@@ -509,7 +578,6 @@ onMounted(() => {
 		opacity: 0.7;
 		transition: all 0.8s;
 		transform: scale(1.1);
-		background-image: url('@/assets/images/Sword Art Online - Ordinal Scale12.5.png');
 	}
 
 	// 移动端适配

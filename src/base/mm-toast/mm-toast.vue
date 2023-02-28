@@ -8,20 +8,20 @@
 </template>
 
 <script setup>
-// const position = ref('center');
-// const message = ref('');
-// const duration = ref(1500);
-// const visible = ref(false);
+// 使用对象吧，变量很多
 const data = reactive({
 	position: 'center',
 	message: '',
 	duration: 1500,
 	visible: false
 })
+
+// 计算属性
 const positionClasss = computed(() => {
 	return 'mm-toast-' + data.position;
 })
 
+// 暴露变量
 defineExpose({
 	data
 })

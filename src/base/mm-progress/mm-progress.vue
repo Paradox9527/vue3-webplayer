@@ -15,6 +15,8 @@ import { getCurrentInstance } from "vue";
 const { proxy } = getCurrentInstance();
 const emit = defineEmits(['percentChangeEnd', 'percentChange'])
 const dotWidth = 10;
+
+// 自定义属性props
 const props = defineProps({
 	// 进度值一
 	percent: {
@@ -27,6 +29,7 @@ const props = defineProps({
 		default: 0
 	}
 })
+// 变量很多还是用对象吧
 const data = reactive({
 	move: {
 		status: false, // 是否可拖动
@@ -82,10 +85,10 @@ const barDown = function (e) { // 鼠标按下事件
 const moveSilde = function (offsetWidth) { // 移动滑块
 	proxy.$refs.mmProgressInner.style.width = `${offsetWidth}px`
 }
-const commitPercent = function (isEnd = false) { // 修改percent
+const commitPercent = function (isEnd = false) { // 修改进度percent
 	const { mmProgress, mmProgressInner } = proxy.$refs
 	const lineWidth = mmProgress.clientWidth - dotWidth
-    const percent = mmProgressInner.clientWidth / lineWidth
+	const percent = mmProgressInner.clientWidth / lineWidth
 	emit(isEnd ? 'percentChangeEnd' : 'percentChange', percent);
 }
 const barMove = function (e) { // 鼠标/触摸移动事件
@@ -108,6 +111,8 @@ const barUp = function (e) { // 鼠标/触摸释放事件
 		data.move.status = false;
 	}
 }
+
+// 生命周期函数
 onMounted(() => { // 挂载
 	nextTick(() => {
 		bindEvents(); // 绑定事件

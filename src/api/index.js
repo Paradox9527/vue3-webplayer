@@ -51,3 +51,13 @@ export function getMusicDetail(ids) {
 	  	}
 	})
 }
+
+// 获取歌词
+export function getLyric(id) {
+	const url = '/lyric'
+	return axios.get(url, {
+		params: {
+			id
+		}
+	})
+}

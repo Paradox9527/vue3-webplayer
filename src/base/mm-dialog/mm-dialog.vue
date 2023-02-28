@@ -21,11 +21,16 @@
 </template>
 
 <script setup>
-import { computed } from "@vue/runtime-core";
-
-const emit = defineEmits(['cancel', 'confirm'])
+const emit = defineEmits(['cancel', 'confirm']);
 let dialogShow = ref(false);
 const { proxy } = getCurrentInstance();
+
+// 计算属性
+const dialogType = computed(() => {
+	return props.type.toLowerCase();
+})
+
+// 自定义属性props
 const props = defineProps({
 	type: {
 		type: String,
@@ -57,47 +62,47 @@ const props = defineProps({
       default: true
     }
 })
+
+// 侦听器 watch 
 watch(dialogShow, (value) => {
 	if (value && props.appendToBody) {
 		// console.log("添加");
 		document.body.appendChild(proxy.$el);
 	}
 })
-let show = function () {
+
+// method
+const show = function () {
 	dialogShow.value = true;
 }
-let hide = function () {
+const hide = function () {
 	dialogShow.value = false;
 }
-let cancel = function () {
+const cancel = function () {
 	hide();
 	emit("cancel");
 }
-let confirm = function () {
+const confirm = function () {
 	hide();
 	emit("confirm")
 }
-const dialogType = computed(() => {
-	return props.type.toLowerCase();
-})
 
+// 生命周期钩子函数
 onMounted(() => {
 	if (dialogShow.value && appendToBody.value) {
-		console.log(proxy.$el);
-		// console.log("添加");
 		document.body.appendChild(proxy.$el)
 	}	
 })
 
 onUnmounted(() => {
-	// console.log(proxy.appendToBody);
-	// console.log(proxy.$el.parentNode);
 	if (proxy.appendToBody && proxy.$el && proxy.$el.parentNode) {
 		// console.log("销毁");
 		proxy.$el.parentNode.removeChild(proxy.$el);
 	}
 })
-defineExpose({// 将组件的方法 data之类的暴露出去暴漏出去
+
+// 暴露方法或者属性
+defineExpose({
 	show,
 	hide
 })

@@ -10,12 +10,13 @@
 				<span v-else class="list-album">专辑</span>
 			</div>
 			<!-- 滚动页面 -->
-			<div ref="listContent" class="list-content">
+			<div ref="listContent" class="list-content" @scroll="listScroll($event)">
 				<!-- v-for 循环数据 -->
 				<div class="list-item" 
 					:class="{ on: playing && currentMusic.id === item.id }"
 					v-for="(item, index) in list"
 					:key="item.id"
+					@dblclick="selectItem(item, index, $event)"
 					>
 					<!-- 序号 -->
 					<span class="list-num" v-text="index + 1"></span>
@@ -27,7 +28,7 @@
 								class="hover"
 								:type="getPlayIconType(item)"
 								:size="40"
-								@handleclick="selectItem(item, index, $event)"
+								@handleclick.stop="selectItem(item, index, $event)"
 							/>
 						</div>
 					</div>
@@ -38,6 +39,7 @@
 							class="hover list-menu-icon-del"
 							type="delete-mini"
 							:size="40"
+							@handleclick.stop="deleteItem(index)"
 						/>
 					</span>
 					<span v-else class="list-album">{{ item.album }}</span>
@@ -53,13 +55,18 @@
 import mmNoResult from '@/base/mm-no-result/mm-no-result.vue';
 import { format } from '@/utils/util';
 import { useMusicStore } from '@/store/modules/musicList.js'
-const { proxy } = getCurrentInstance();
-const emit = defineEmits(['select'])
-const musicStore = useMusicStore()
 
+const { proxy } = getCurrentInstance();
+const emit = defineEmits(['select', 'del','pullUp']);
+const musicStore = useMusicStore();
+const lockUp = ref(true); // 是否锁定滚动加载事件，默认锁定
+const scrollTop = ref(0);
+
+// 计算属性
 const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
 const playing = computed(() => { return musicStore.getPlayingStatus; })
 
+// props
 const props = defineProps({
 	// 歌曲数据
 	list: {
@@ -76,22 +83,58 @@ const props = defineProps({
 	}
 })
 
+//watch
+watch(() => props.list, (newList, oldList) => {
+	if (props.listType !== 2) {
+		return
+	}
+	if (newList.length !== oldList.length) {
+		lockUp.value = false;
+	} else if (newList[newList.length - 1].id !== oldList[oldList.length - 1].id) {
+		lockUp.value = false;
+	}
+}) 
+
+// method
+// 格式化时间
 const formatTime = function(time) {
 	return format(time);
 }
-
 // 播放暂停事件
 const selectItem = function (item, index, e) {
-	// proxy.$mmToast("还没实现播放！")
+	if (e && /list-menu-icon-del/.test(e.target.className)) {
+        return;
+    }
 	if (currentMusic.value.id && item.id === currentMusic.value.id) {
 		musicStore.setPlaying(!playing.value);
 		return;
 	}
 	emit('select', item, index)
 }
-
+// 获取播放状态
 const getPlayIconType = function (itemId) {
 	return playing.value && currentMusic.value.id === itemId.id ?  'pause-mini' : 'play-mini'
+}
+// 删除事件
+const deleteItem = function (index) {
+	emit('del', index)
+}
+// 回到顶部
+const scrollTo = function () {
+	proxy.$refs.listContent.scrollTop = 0;
+}
+// 滚动事件
+const listScroll = function (e) {
+	const eventScrollTop = e.target.scrollTop;
+	scrollTop.value = eventScrollTop;
+	if (props.listType !== 2 || lockUp.value) {
+		return;
+	}
+	const { scrollHeight, offsetHeight } = e.target;
+	if (eventScrollTop + offsetHeight >= eventScrollTop - 50) {
+		lockUp.value = true; // 锁定滚动加载
+		emit('pullUp')
+	}
 }
 </script>
 

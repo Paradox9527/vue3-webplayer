@@ -14,13 +14,7 @@ import { defaultSheetId } from '@/config.js'
 import { useMusicStore } from '@/store/modules/musicList.js'
 
 const { proxy } = getCurrentInstance();
-const musicStore = useMusicStore()
-
-getPlaylistDetail(defaultSheetId).then((playlist) => {
-	const list = playlist.tracks.slice(0, 100);
-	// console.log(list); 
-	musicStore.setPlayList(list);
-})
+const musicStore = useMusicStore(); // pinia
 
 // 隐藏开头动画模块
 let loadDom = document.querySelector('#appLoading');
@@ -36,6 +30,11 @@ if (loadDom) {
 	loadDom.classList.add('removeAnimate');
 }
 
+// created函数，因为vue3无该钩子了 
+getPlaylistDetail(defaultSheetId).then((playlist) => {
+	const list = playlist.tracks.slice(0, 100);
+	musicStore.setPlayList(list);
+})
 nextTick(() => {
 	musicStore.setAudioEle(proxy.$refs.mmPlayer);
 })

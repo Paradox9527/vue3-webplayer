@@ -1,4 +1,4 @@
-<!-- icon组件 -->
+<!-- icon组件 使用了render，虚拟dom的节点树的形式写的 -->
 <script>
 import { h } from 'vue';
 
@@ -14,24 +14,22 @@ export default {
     	}
 	},
 	setup(props, content) {
-		// console.log(props.size);
-		function getIconCls() {
+		function getIconCls() { // icon的class
 			return `icon-${props.type}`
 		}
-		function getIconStyle () {
+		function getIconStyle () { // icon大小
 			return { fontSize: props.size + 'px' }
 		}
-		function onClick (e) {
+		function onClick (e) { // 事件
 			content.emit('handleclick', e)
 		}
-		// console.log(content);
 		return {
 			getIconCls,
 			getIconStyle,
 			onClick
 		}
 	},
-	render() {
+	render() { // 渲染函数 渲染节点
 		const Icon = h(
 			'i',
 			{ 

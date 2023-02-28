@@ -1,3 +1,4 @@
+// 全局组件
 import TempToast from './mm-toast.vue';
 import { createApp } from 'vue';
 

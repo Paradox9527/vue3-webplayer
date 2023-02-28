@@ -22,15 +22,18 @@ import MmProgress from '@/base/mm-progress/mm-progress.vue'
 
 const emit = defineEmits(['volumeChange'])
 const lastVolume = ref(1);
+
+// 自定义属性props
 let props = defineProps({
 	volume: {
 		type:Number,
 		requied: true
 	}
 })
-let volumeProgress = computed(() => { return props.volume })
-// console.log(volumeProgress.value);
-let isMute = computed({
+
+// 计算属性
+let volumeProgress = computed(() => { return props.volume }); // 音量大小
+let isMute = computed({ // 是否静音
 	// getter
 	get() {
 		return volumeProgress.value === 0
@@ -43,16 +46,16 @@ let isMute = computed({
 		}
 		handleVolumeChange(volume)
 	}
-})
+});
 
 // method
-const getVolumeIconType = function () {
+const getVolumeIconType = function () { // 返回静音icon是静音的还是不是静音的
 	return isMute.value? 'volume-off' : 'volume'
 }
-const handleToggleVolume = function () {
+const handleToggleVolume = function () { // 静音切换
 	isMute.value = !isMute.value
 }
-const handleVolumeChange = function (percent) {
+const handleVolumeChange = function (percent) { // 音量调节传输父组件变化的百分比，从而调节音量
 	emit('volumeChange', percent)
 }
 </script>
