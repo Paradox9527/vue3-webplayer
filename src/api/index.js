@@ -61,3 +61,14 @@ export function getLyric(id) {
 		}
 	})
 }
+
+// 获取音乐评论
+export function getComment(id, page, limit = defaultLimit) {
+	return axios.get('/comment/music', {
+		params: {
+			offset: page * limit,
+			limit: limit,
+			id
+		}
+	})
+}

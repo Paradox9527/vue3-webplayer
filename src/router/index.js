@@ -21,6 +21,13 @@ const router = createRouter({
 				},
 				{
 					path: '/music/userlist', // 我的歌单
+				},
+				{
+					path: '/music/comment/:id', // 评论
+					component: () => import('@/pages/comment/comment.vue'),
+					meta: {
+						title: '评论详情'
+					} 
 				}
 			]
 		}

@@ -285,7 +285,7 @@ const openComment = function () {
 		proxy.$mmToast('还没有播放歌曲哦！');
 		return false
 	}
-	proxy.$mmToast('功能还在重构中~');
+	proxy.$router.push(`/music/comment/${currentMusic.value.id}`)
 }
 // 修改音乐显示时长
 const progressMusic = function (percent) {
