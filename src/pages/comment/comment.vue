@@ -1,7 +1,7 @@
 <template>
     <div class="comment">
         <mmLoading v-model:value="mmLoadShow"></mmLoading>
-        <dl class="comment-list">
+        <dl class="comment-list" v-if="data.hotComments.length > 0" @scroll="listScroll($event)">
             <!-- 标题 精彩评论 -->
             <dt class="comment-title">精彩评论</dt>
             <!-- item -->
@@ -63,6 +63,13 @@ let data = reactive({
     total: null // 评论总数
 })
 
+// 侦听器
+watch(() => data.commentList, (newList, oldList) => {
+    if (newList.length !== oldList.length) {
+        data.lockUp = false;
+    }
+})
+
 // 初始化，create的时候调用获取评论
 let initData = function () {
     getComment(proxy.$route.params.id, data.page).then(res => {
@@ -71,10 +78,34 @@ let initData = function () {
         data.total = res.total;
         data.lockUp = true;
         _hideLoad();
-        console.log(data.hotComments);
-        console.log(data.commentList);
-        console.log(data.total);
+        // console.log(data.hotComments);
+        // console.log(data.commentList);
+        // console.log(data.total);
     })
+}
+
+// 滚动加载事件
+let pullUp = function () {
+    getComment(proxy.$route.params.id, data.page).then(({ comments })=> {
+        data.commentList = [...data.commentList, ...comments];
+        console.log("新增了");
+    })
+}
+
+// 列表滚动事件
+let listScroll = function (e) {
+    if (data.lockUp) {
+        return
+    }
+    const { scrollTop, scrollHeight, offsetHeight } = e.target;
+    // console.log(scrollTop);
+    // console.log(scrollHeight);
+    // console.log(offsetHeight);
+    if (scrollTop + offsetHeight >= scrollHeight - 100) {
+        data.lockUp = true; // 锁定滚动加载
+        data.page += 1;
+        pullUp(); // 触发滚动加载事件
+    }
 }
 
 // 格式化方法

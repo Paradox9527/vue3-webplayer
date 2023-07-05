@@ -4,6 +4,16 @@ import { formatTopSongs } from '@/utils/song'
 
 axios.defaults.baseURL = import.meta.env.VITE_APP_BASE_API
 
+// 排行榜列表
+export function getToplistDetail() {
+	return axios.get('/toplist/detail')
+}
+
+// 推荐歌单
+export function getPersonalized() {
+	return axios.get('/personalized')
+}
+
 // 获取用户歌单详情
 export function getUserPlaylist(uid) {
 	return axios.get('/user/playlist', {

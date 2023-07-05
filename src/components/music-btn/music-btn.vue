@@ -1,12 +1,12 @@
 <template>
 	<!-- 选项 -->
 	<div class="music-btn">
-		<router-link to="/music/playlist" custom v-slot="btnPlaylist"><span @click="btnPlaylist">正在播放</span></router-link>
-		<router-link to="/music/toplist" custom v-slot="btnToplist"><span @click="btnToplist">推荐</span></router-link>
-		<router-link to="/music/search" custom v-slot="btnSearch"><span @click="btnSearch">搜索</span></router-link>
-		<router-link to="/music/userlist" custom v-slot="btnUserlist"><span @click="btnUserlist">我的歌单</span></router-link>
+		<router-link to="/music/playlist"><span>正在播放</span></router-link>
+		<router-link to="/music/toplist"><span>推荐</span></router-link>
+		<router-link to="/music/search"><span>搜索</span></router-link>
+		<router-link to="/music/userlist"><span>我的歌单</span></router-link>
 		<span class="show-960">歌词</span>
-		<router-link to="/music/historylist" custom v-slot="btnHistorylist"><span @click="btnHistorylist">我听过的</span></router-link>
+		<router-link to="/music/historylist"><span>我听过的</span></router-link>
 	</div>
 </template>
 
@@ -34,9 +34,6 @@
 		line-height: 40px;
 		overflow: hidden;
 		cursor: pointer;
-		&:nth-last-of-type(1) {
-			margin: 0;
-		}
 		&:hover,
 		&.active {
 			border-color: $btn_color_active;
