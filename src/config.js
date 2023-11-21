@@ -27,7 +27,9 @@ export const playMode = {
 export const defaultVolume = 0.8
 
 // 默认背景图（可引入网络图或本地静态图
-const req = import.meta.globEager('assets/background/*.png');
-const index = Math.floor(Math.random() * 5);
-const path = `/src/assets/background/bg-${index}.png`;
+const req = import.meta.globEager('assets/background/*.jpg');
+// console.log(req);
+// const index = Math.floor(Math.random() * 5);
+const index = 1;
+const path = `/src/assets/background/bg-${index}.jpg`;
 export const bgUrl = req[path]?.default;
