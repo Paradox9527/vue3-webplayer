@@ -55,11 +55,35 @@ body {
   }
 }
 
+// flex 弹性盒子的一些样式
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+// 设置BFC
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
 //滚动条
 ::-webkit-scrollbar {
   /*滚动条整体部分，其中的属性有width,height,background,border（就和一个块级元素一样）等*/
   background-color: rgba(0, 0, 0, 0.3);
   width: 5px; //纵向滚动条
+  height: 5px;
   border-radius: 10px;
 }
 

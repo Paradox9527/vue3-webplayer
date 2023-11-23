@@ -4,7 +4,15 @@
 			<!-- 左侧 -->
 			<div class="music-left">
 				<music-btn></music-btn>
-				<router-view class="music-list"></router-view>
+				<router-view class="router-view" v-if="$route.meta.keepAlive" v-slot="{ Component }">
+					<keep-alive>
+    					<component :is="Component" />
+  					</keep-alive>
+				</router-view>
+				<!-- <keep-alive>
+					<router-view v-if="$route.meta.keepAlive" class="router-view "></router-view>
+				</keep-alive> -->
+				<router-view v-if="!$route.meta.keepAlive" :key="$route.path" class="router-view"></router-view>
 			</div>
 			<!-- 右侧 -->
 			<div class="music-right" :class="{ show: lyricVisible }">
@@ -73,7 +81,7 @@
 				class="icon-color pointer comment"
 				type="comment"
 				:size="30"
-				title="循环播放"
+				title="评论"
 				@handleclick="openComment"
 			/>
 
@@ -129,7 +137,9 @@ const percentMusic = computed(() => {
 const historyList = computed(() => { return musicStore.getHistoryList; })
 
 const picUrl = computed(() => {
-	return `url(${bgUrl})`
+	return currentMusic.value.id && currentMusic.value.image
+	? `url(${currentMusic.value.image}?param=300y300)`
+	: `url(${bgUrl})`
 })
 // console.log(picUrl.value);
 // watch 侦听器
@@ -434,6 +444,13 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+.router-view {
+	flex: 1;
+	overflow-x: hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
 .music {
 	padding: 75px 25px 25px 25px;
 	width: 100%;

@@ -1,12 +1,12 @@
 <template>
 	<!-- 歌曲列表 -->
-	<div class="musicList">
-		<template v-if="true">
+	<div class="musicList flex-col">
+		<template v-if="list.length > 0">
 			<!-- 顶部标题 -->
 			<div class="list-item list-header">
 				<span class="list-name">歌曲</span>
 				<span class="list-artist">歌手</span>
-				<span v-if="listType === 1" class="list-time">时长</span>
+				<span v-if="isDuration" class="list-time">时长</span>
 				<span v-else class="list-album">专辑</span>
 			</div>
 			<!-- 滚动页面 -->
@@ -33,7 +33,7 @@
 						</div>
 					</div>
 					<span class="list-artist">{{ item.singer }}</span>
-					<span v-if="listType === 1" class="list-time">
+					<span v-if="isDuration" class="list-time">
 						{{ formatTime(item.duration % 3600) }}
 						<mm-icon
 							class="hover list-menu-icon-del"
@@ -62,9 +62,18 @@ const musicStore = useMusicStore();
 const lockUp = ref(true); // 是否锁定滚动加载事件，默认锁定
 const scrollTop = ref(0);
 
+/*-------列表类型------- */
+const LIST_TYPE_ALBUM = 'album';
+const LIST_TYPE_DURATION = 'duration';
+const LIST_TYPE_PULLUP = 'pullup';
+const THRSHOLD = 100; // 触发滚动的阈值
+
 // 计算属性
 const currentMusic = computed(() => { return musicStore.getCurrentMusic; })
 const playing = computed(() => { return musicStore.getPlayingStatus; })
+const isDuration = computed(() => {
+	return props.listType === LIST_TYPE_DURATION;
+})
 
 // props
 const props = defineProps({
@@ -78,14 +87,14 @@ const props = defineProps({
 	 * 1：显示时长栏目
 	 */
 	listType: {
-		type: Number,
-		default: 0
+		type: String,
+		default: 'album',
 	}
 })
 
 //watch
 watch(() => props.list, (newList, oldList) => {
-	if (props.listType !== 2) {
+	if (props.listType !== LIST_TYPE_PULLUP) {
 		return
 	}
 	if (newList.length !== oldList.length) {
@@ -127,18 +136,29 @@ const scrollTo = function () {
 const listScroll = function (e) {
 	const eventScrollTop = e.target.scrollTop;
 	scrollTop.value = eventScrollTop;
-	if (props.listType !== 2 || lockUp.value) {
+	if (props.listType !== LIST_TYPE_PULLUP || lockUp.value) {
 		return;
 	}
 	const { scrollHeight, offsetHeight } = e.target;
-	if (eventScrollTop + offsetHeight >= eventScrollTop - 50) {
+	if (eventScrollTop + offsetHeight >= scrollHeight - THRSHOLD) {
 		lockUp.value = true; // 锁定滚动加载
 		emit('pullUp')
 	}
 }
+onActivated(() => {
+	// console.log("激活了");
+	scrollTop.value && proxy.$refs.listContent && (proxy.$refs.listContent.scrollTop = scrollTop.value)
+})
+
+defineExpose({ // 暴露组件方法
+	scrollTo
+})
 </script>
 
 <style lang="scss" scoped>
+.musicList {
+	height: 100%;
+}
 .list-header {
 	border-bottom: 1px solid $list_head_line_color;
 	color: $text_color_active;

@@ -3,7 +3,7 @@
 	<div class="playList">
 		<music-list
 			:list="playlist"
-			:list-type="1"
+			list-type="duration"
 			@select="selectItem"
 			@del="deleteItem"
 		>
@@ -49,7 +49,7 @@ const deleteItem = function (index) {
 	console.log(index);
 	let list = [...playlist.value];
 	list.splice(index, 1);
-	console.log(list);
+	// console.log(list);
 	musicStore.removerPlayListItem(list, index);
 	proxy.$mmToast("删除成功");
 }

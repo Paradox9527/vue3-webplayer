@@ -2,6 +2,12 @@ import { defineStore } from "pinia";
 import { playMode } from '@/config'
 import { getHistoryList, getMode } from '@/utils/storage'
 
+let findIndex = function (list, music) {
+	return list.findIndex((item) => {
+		return item.id === music.id
+	})
+}
+
 export const useMusicStore = defineStore(
 	'music',
 	{
@@ -17,31 +23,33 @@ export const useMusicStore = defineStore(
 			}
 		},
 		getters: {
-			getaudioEle: (state) => {
-				return state.audioEle;
+			getaudioEle() {
+				// console.log(this); 写成箭头函数的形式时候，要调用上面的this。因为箭头函数的this没办法获得函数上下文
+				return this.audioEle;
 			},
-			getPlayMode: (state) => {
-				return state.mode;
+			getPlayMode() {
+				return this.mode;
 			},
-			getOrderList: (state) => {
-				return state.orderList;
+			getOrderList() {
+				return this.orderList;
 			},
-			getPlayList: (state) => {
-				return state.playlist;
+			getPlayList() {
+				return this.playlist;
 			},
-			getPlayingStatus: (state) => {
-				return state.playing;
+			getPlayingStatus() {
+				return this.playing;
 			},
-			getCurrentMusic: (state) => {
-				return state.playlist[state.currentIndex] || {}
+			getCurrentMusic() {
+				return this.playlist[this.currentIndex] || {}
 			},
-			getCurrentIndex: (state) => {
-				return state.currentIndex;
+			getCurrentIndex() {
+				return this.currentIndex;
 			},
-			getHistoryList: (state) => {
-				return state.historyList;
+			getHistoryList() {
+				return this.historyList;
 			}
 		},
+		// 异步逻辑的部分 主要涉及调用接口等
 		actions: {
 			setPlaying(playStatus) { // 设置播放状态
 				this.playing = playStatus;
@@ -67,8 +75,6 @@ export const useMusicStore = defineStore(
 			},
 			removerPlayListItem(list, index) { // 删除正在播放列表中的歌曲
 				let currentIndex = this.currentIndex;
-				console.log(currentIndex);
-				console.log(this);
 				if (index < this.currentIndex || list.length === this.currentIndex) { // 索引比当前所有小，当前播放列表长度等于索引就是最后一个
 					currentIndex--;
 					this.setCurrentIndex(currentIndex);
@@ -84,6 +90,22 @@ export const useMusicStore = defineStore(
 				this.setPlaying(false);
 				this.setCurrentIndex(-1);
 				this.setPlayList([]);
+			},
+			selectPlay () { // 选择播放
+
+			},
+			selectAddPlay (music) { // 选择播放（会插入一条到播放列表）
+				let list = [...this.playlist];
+				let index = findIndex(list, music);
+				if (index > -1) {
+					this.setCurrentIndex(index);
+				} else {
+					list.unshift(music);
+					this.setPlayList(list); // 设置播放列表
+					this.setOrderList(list); // 设置历史播放列表
+					this.setCurrentIndex(0); // 设置当前索引
+				}
+				this.setPlaying(true); // 播放
 			}
 		}
 	}
