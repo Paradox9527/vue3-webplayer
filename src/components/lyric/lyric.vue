@@ -175,7 +175,7 @@ onMounted(() => {
 	}
 }
 
-@media (max-height: 960px) {
+@media (max-width: 960px) {
 	.music-info {
 		display: none;
 	}
