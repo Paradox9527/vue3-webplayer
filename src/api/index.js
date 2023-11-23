@@ -1,6 +1,6 @@
 import axios from "@/utils/axios";
 import { defaultLimit } from "@/config"
-import { formatTopSongs } from '@/utils/song'
+import { formatSongs } from '@/utils/song'
 
 axios.defaults.baseURL = import.meta.env.VITE_APP_BASE_API
 
@@ -38,7 +38,7 @@ export function getPlaylistDetail(id) {
 		  	}
 		  	// 过滤完整歌单 如排行榜
 		  	if (tracks.length === trackIds.length) {
-				playlist.tracks = formatTopSongs(playlist.tracks)
+				playlist.tracks = formatSongs(playlist.tracks)
 				resolve(playlist)
 				return
 		  	}
@@ -46,7 +46,7 @@ export function getPlaylistDetail(id) {
 		  	const ids = trackIds.slice(0, 500).map(v => v.id).toString();
 
 		  	getMusicDetail(ids).then(({ songs }) => {
-				playlist.tracks = formatTopSongs(songs)
+				playlist.tracks = formatSongs(songs)
 				resolve(playlist)
 		  	})
 		})
@@ -81,4 +81,20 @@ export function getComment(id, page, limit = defaultLimit) {
 			id
 		}
 	})
+}
+
+// 搜索
+export function search(keywords, page = 0, limit = defaultLimit) {
+	return axios.get('/search', {
+		params: {
+			offset: page * limit,
+			limit: limit,
+			keywords,
+		}
+	})
+}
+
+// 热点搜索
+export function searchHot() {
+	return axios.get('/search/hot')
 }
