@@ -69,7 +69,7 @@ const unbindEvents = function (){ // 移除绑定事件
 }
 const barClick = function (e) { // 点击事件
 	let rect = proxy.$refs.mmProgress.getBoundingClientRect();
-	console.log(rect);
+	// console.log(rect);
 	let offsetWidth = Math.min(
 		proxy.$refs.mmProgress.clientWidth - dotWidth,
 		Math.max(0, e.clientX - rect.left)
