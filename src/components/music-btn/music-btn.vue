@@ -14,6 +14,7 @@
 </script>
 
 <style lang="scss" scoped>
+
 .music-btn {
 	width: 100%;
 	height: 60px;
@@ -21,6 +22,12 @@
 	white-space: nowrap;
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
+	.router-link-active {
+		span {
+			border-color: $btn_color_active;
+			color: $btn_color_active;
+		}
+	}
 	span {
 		display: inline-block;
 		height: 40px;
