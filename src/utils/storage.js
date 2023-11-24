@@ -1,4 +1,4 @@
-import { defaultVolume } from '@/config'
+import { defaultVolume, playMode } from '@/config'
 
 const _storage = window.localStorage
 const storage = {
@@ -36,7 +36,7 @@ export function getHistoryList() {
 }
 
 // 更新播放历史
-export function setHistoryList(music) {
+export function setHistory(music) {
   let list = storage.get(HISTORYLIST_KEY)
   const index = list.findIndex(item => {
     return item.id === music.id
@@ -75,7 +75,7 @@ export function clearHistoryList() {
 const MODE_KEY = '__mmPlayer_mode__'
 // 获取播放模式
 export function getMode() {
-  return storage.get(MODE_KEY, null)
+  return Number(storage.get(MODE_KEY, playMode.listLoop));
 }
 // 修改播放模式
 export function setMode(mode) {
