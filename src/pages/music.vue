@@ -192,7 +192,6 @@ const prev = function() {
 		loop();// 循环播放
 	} else {
 		let index = currentIndex.value - 1;
-		console.log(index);
 		if (index < 0) {
 			index = playlist.value.length - 1;
 		}
@@ -264,7 +263,7 @@ const getModeIconTitle = function () {
 // 修改当前歌曲索引
 const resetCurrentIndex = function(list) {
 	const index = list.findIndex((item) => {
-		return item.id = currentMusic.value.id
+		return item.id === currentMusic.value.id
 	})
 	musicStore.setCurrentIndex(index);
 }
@@ -287,7 +286,6 @@ const modeChange = function () {
 	}
 	resetCurrentIndex(list);
 	musicStore.setPlayList(list);
-	proxy.$mmToast("播放模式切换功能好像还有bug")
 }
 // 打开音乐评论
 const openComment = function () {
