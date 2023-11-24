@@ -1,11 +1,8 @@
 import { defineStore } from "pinia";
-import { playMode } from '@/config'
-import { getHistoryList, getMode } from '@/utils/storage'
+import { clearHistoryList, removeHistoryList, getHistoryList,  setHistory, getMode, setMode } from '@/utils/storage'
 
 let findIndex = function (list, music) {
-	return list.findIndex((item) => {
-		return item.id === music.id
-	})
+	return list.findIndex((item) => item.id === music.id)
 }
 
 export const useMusicStore = defineStore(
@@ -14,10 +11,10 @@ export const useMusicStore = defineStore(
 		state: () => {
 			return {
 				audioEle: null, // audio元素
-				mode: Number(getMode()) || playMode.listLoop, // 播放模式，默认列表循环
+				mode: getMode(), // 播放模式，默认列表循环
 				playlist: [], // 播放列表
 				orderList: [], // 顺序列表
-				historyList: [], // 历史列表
+				historyList: getHistoryList() || [], // 历史列表
 				playing: false, // 播放状态
 				currentIndex: -1 // 当前音乐索引
 			}
@@ -40,7 +37,7 @@ export const useMusicStore = defineStore(
 				return this.playing;
 			},
 			getCurrentMusic() {
-				return this.playlist[this.currentIndex] || {}
+				return this.playlist[this.currentIndex] || {};
 			},
 			getCurrentIndex() {
 				return this.currentIndex;
@@ -54,12 +51,11 @@ export const useMusicStore = defineStore(
 			setPlaying(playStatus) { // 设置播放状态
 				this.playing = playStatus;
 			},
-			setPlayList(playList) { // 设置播放列表
-				this.playlist = playList;
-				this.orderList = playList;
-			},
 			setOrderList(orderList) {
 				this.orderList = orderList;
+			},
+			setPlayList(playList) { // 设置播放列表
+				this.playlist = playList;
 			},
 			setCurrentIndex(index) { //  修改当前音乐索引
 				this.currentIndex = index;
@@ -68,10 +64,20 @@ export const useMusicStore = defineStore(
 				this.audioEle = ele
 			},
 			setPlayMode(playMode) { // 修改播放模式
-				this.mode = playMode
+				let mode = setMode(playMode);
+				this.mode = mode;
 			},
 			setHistoryList(historyList) { // 修改播放历史列表
-				this.historyList.push(historyList);
+				let list = setHistory(historyList);
+				this.historyList = list;
+			},
+			removeHistory(music) { // 删除历史记录
+				let list = removeHistoryList(music);
+				this.historyList = list;
+			},
+			clearHistory() { // 清空播放历史
+				let list = clearHistoryList();
+				this.historyList = list;
 			},
 			removerPlayListItem(list, index) { // 删除正在播放列表中的歌曲
 				let currentIndex = this.currentIndex;
@@ -90,9 +96,13 @@ export const useMusicStore = defineStore(
 				this.setPlaying(false);
 				this.setCurrentIndex(-1);
 				this.setPlayList([]);
+				this.setOrderList([]);
 			},
-			selectPlay () { // 选择播放
-
+			selectPlay (list, index) { // 选择播放
+				this.setPlayList(list);
+				this.setOrderList(list);
+				this.setCurrentIndex(index);
+				this.setPlaying(true);
 			},
 			selectAddPlay (music) { // 选择播放（会插入一条到播放列表）
 				let list = [...this.playlist];
