@@ -34,6 +34,7 @@ if (loadDom) {
 getPlaylistDetail(defaultSheetId).then((playlist) => {
 	const list = playlist.tracks.slice(0, 100);
 	musicStore.setPlayList(list);
+	musicStore.setOrderList(list);
 })
 nextTick(() => {
 	musicStore.setAudioEle(proxy.$refs.mmPlayer);
