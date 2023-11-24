@@ -1,6 +1,6 @@
 <template>
 	<!-- 歌曲列表 -->
-	<div class="musicList flex-col">
+	<div class="music-list flex-col">
 		<template v-if="list.length > 0">
 			<!-- 顶部标题 -->
 			<div class="list-item list-header">
@@ -156,7 +156,7 @@ defineExpose({ // 暴露组件方法
 </script>
 
 <style lang="scss" scoped>
-.musicList {
+.music-list {
 	height: 100%;
 }
 .list-header {
@@ -169,8 +169,9 @@ defineExpose({ // 暴露组件方法
 }
 
 .list-content {
-	width: 100%;
-	height: calc(100% - 60px);
+	flex: 1;
+	// width: 100%;
+	// height: calc(100% - 60px);
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
