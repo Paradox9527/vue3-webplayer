@@ -9,6 +9,12 @@ export const useUserStore = defineStore(
 				uid: getUserId() || null
 			}
 		},
+		getters: {
+			getUid() {
+				return this.uid;
+			}
+		},
+
 		actions: {
 			saveUserId(uid) {
 				this.uid = uid;
